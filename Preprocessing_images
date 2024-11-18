@@ -1,0 +1,44 @@
+import os
+import cv2
+import numpy as np
+from sklearn.model_selection import train_test_split
+
+# Define paths
+dataset_path = 'D:\\FER-2013'
+train_path = os.path.join(dataset_path, 'train')
+validation_path = os.path.join(dataset_path, 'test')
+
+# Create directories for organized data
+os.makedirs('data/train', exist_ok=True)
+os.makedirs('data/validation', exist_ok=True)
+
+# Function to preprocess images
+def preprocess_image(image_path, target_size=(48, 48)):
+    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    image = cv2.resize(image, target_size)
+    image = image / 255.0  # Normalize pixel values
+    return image
+
+# Function to load images and labels
+def load_images_and_labels(path):
+    images = []
+    labels = []
+    for emotion in os.listdir(path):
+        emotion_path = os.path.join(path, emotion)
+        if os.path.isdir(emotion_path):
+            for img_file in os.listdir(emotion_path):
+                img_path = os.path.join(emotion_path, img_file)
+                image = preprocess_image(img_path)
+                images.append(image)
+                labels.append(emotion)
+    return np.array(images), np.array(labels)
+
+# Load training and validation data
+train_images, train_labels = load_images_and_labels(train_path)
+validation_images, validation_labels = load_images_and_labels(validation_path)
+
+# Save preprocessed data
+np.save('data/train/images.npy', train_images)
+np.save('data/train/labels.npy', train_labels)
+np.save('data/validation/images.npy', validation_images)
+np.save('data/validation/labels.npy', validation_labels)
